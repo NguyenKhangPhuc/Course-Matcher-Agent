@@ -117,7 +117,7 @@ def search_matching_courses(technical_requirements: str, source_id: str) -> str:
     result = supabase.rpc("match_courses", {
         "query_embedding": query_vector,
         "source_id": str(uuid.UUID(source_id)),
-        "match_count": 8,
+        "match_count": 12,
         "match_threshold": 0.0
     }).execute()
     print(f"RPC data: {result.data}")
@@ -231,10 +231,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # Restrict in production
+    allow_origins=["http://localhost:3000"], # Thay bằng URL chạy Next.js của bạn
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"], # Bắt buộc phải có "*" hoặc ["Authorization", "Content-Type"]
 )
 
 # =====================================================================
@@ -260,10 +260,14 @@ async def get_current_user(authorization: str = Header(...)):
     try:
         token = authorization.replace("Bearer ", "").strip()
         user_response = supabase.auth.get_user(token)
+        print(token)
+        print(user_response)
         if not user_response.user:
+            print(f"Auth error details:")
             raise HTTPException(status_code=401, detail="Invalid or expired token")
         return user_response.user
-    except Exception:
+    except Exception as e:
+        print(f"Auth error details: {str(e)}")
         raise HTTPException(status_code=401, detail="Authentication failed")
 
 
@@ -275,6 +279,7 @@ class ChatRequest(BaseModel):
     """Request body for the chat endpoint."""
     job_description: str
     source_id: str
+    position: str
     company_name: Optional[str] = None
 
 
@@ -285,6 +290,7 @@ class ChatResponse(BaseModel):
     technical_requirements: str
     user_id: str
     steps_taken: int
+    source_id: str
 
 # =====================================================================
 # ENDPOINTS
@@ -316,6 +322,7 @@ async def chat(
     try:
         user_message = (
             f"Company: {request.company_name or 'Unknown'}\n"
+            f"Position: {request.position}"
             f"Source ID: {request.source_id}\n\n"
             f"Job Description:\n{request.job_description}"
         )
@@ -349,6 +356,7 @@ async def chat(
             technical_requirements=technical_requirements,
             user_id=str(current_user.id),
             steps_taken=len(agent_response["messages"]),
+            source_id = str(request.source_id)
         )
 
 
