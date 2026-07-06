@@ -34,6 +34,7 @@ async def run_streaming_agent(
     job_description: str,
     source_id: str,
     company_name: str,
+    programme: str
 ) -> AsyncGenerator[str, None]:
     loop = asyncio.get_event_loop()
 
@@ -44,7 +45,7 @@ async def run_streaming_agent(
         yield sse("requirements", technical_requirements)
 
         courses = await loop.run_in_executor(
-            None, search_courses, technical_requirements, source_id
+            None, search_courses, technical_requirements, source_id, programme
         )
 
         if not courses:

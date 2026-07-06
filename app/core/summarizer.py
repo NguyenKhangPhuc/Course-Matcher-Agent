@@ -12,13 +12,13 @@ programming languages, and domain knowledge from this job description.
 
 Ignore: salary, location, company culture, soft skills, benefits.
 
-Return a single concise paragraph (max 120 words). No preamble, no headers.
+Return a concise paragraph with minimum of 70 words. No preamble, no headers.
 
 Job Description:
 {job_description}"""
             }
         ],
         max_tokens=300,
-        temperature=0,
+        temperature=0.3,
     )
     return response.choices[0].message.content.strip()
