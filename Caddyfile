@@ -1,0 +1,13 @@
+cmp-be.ikapo.fi {
+    # Reverse proxy to the FastAPI app service on its internal port
+    reverse_proxy app:{$PORT:8000}
+
+    # Enable compression for responses
+    encode gzip zstd
+
+    # Configure logging
+    log {
+        output stdout
+        format json
+    }
+}

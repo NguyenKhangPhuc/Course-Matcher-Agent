@@ -1,0 +1,29 @@
+# Version control
+.git
+.gitignore
+
+# Python caching and environment
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+env/
+.env
+
+# Ide files
+.vscode/
+.idea/
+
+# Local agents config
+.agents/
+
+# Docker configurations (not needed inside image)
+Dockerfile
+docker-compose.yml
+Caddyfile
+.dockerignore
