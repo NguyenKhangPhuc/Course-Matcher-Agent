@@ -1,158 +1,146 @@
-# name: Production CI/CD Pipeline
+name: Production CI/CD Pipeline
 
-# on:
-#   push:
-#     branches: [ main ]
+on:
+  push:
+    branches: [ main ]
 
-# permissions:
-#   contents: write
+permissions:
+  contents: write
 
-# jobs:
-#   # ==========================================
-#   # STAGE 1: VERIFICATION
-#   # ==========================================
+jobs:
+  # ==========================================
+  # STAGE 1: VERIFICATION
+  # ==========================================
 
-#   unit-test:
-#     # Purpose: Runs pytest unit tests for core modules.
-#     # Rationale: Verifies business logic correctness and ensures code quality before building Docker artifacts.
-#     # Dependencies: None. Runs immediately on trigger.
-#     name: Pytest Verification
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v4
+  unit-test:
+    # Purpose: Runs pytest unit tests for core modules.
+    # Rationale: Verifies business logic correctness and ensures code quality before building Docker artifacts.
+    # Dependencies: None. Runs immediately on trigger.
+    name: Pytest Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-#       - name: Set up Python
-#         uses: actions/setup-python@v5
-#         with:
-#           python-version: '3.12'
-#           cache: 'pip'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
 
-#       - name: Install Dependencies
-#         run: |
-#           python -m pip install --upgrade pip
-#           pip install -r requirements.txt
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-#       - name: Run Pytest
-#         run: |
-#           # Set pythonpath to allow module discovery
-#           PYTHONPATH=. pytest app/tests
+      - name: Run Pytest
+        run: |
+          # Set pythonpath to allow module discovery
+          PYTHONPATH=. pytest app/tests
 
-#   # ==========================================
-#   # STAGE 2: DOCKER ARTIFACT CREATION
-#   # ==========================================
+  # ==========================================
+  # STAGE 2: DOCKER ARTIFACT CREATION
+  # ==========================================
 
-#   build-docker:
-#     # Purpose: Builds the application Docker image and pushes it to Docker Hub.
-#     # Rationale: Packages the app into a reproducible container image tagged with the commit SHA for traceability.
-#     # Dependencies: Requires successful execution of the unit-test job.
-#     name: Build & Push Docker Image
-#     runs-on: ubuntu-latest
-#     needs: unit-test
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v4
+  build-docker:
+    # Purpose: Builds the application Docker image and pushes it to Docker Hub.
+    # Rationale: Packages the app into a reproducible container image tagged with the commit SHA for traceability.
+    # Dependencies: Requires successful execution of the unit-test job.
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: unit-test
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-#       - name: Set up Docker Buildx
-#         uses: actions/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: actions/setup-buildx-action@v3
 
-#       - name: Log in to Docker Hub
-#         uses: docker/login-action@v3
-#         with:
-#           username: ${{ secrets.DOCKER_HUB_USERNAME }}
-#           password: ${{ secrets.DOCKER_HUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-#       - name: Build and Push Docker Image
-#         uses: docker/build-push-action@v5
-#         with:
-#           context: .
-#           file: ./Dockerfile
-#           push: true
-#           # Best practice tag: using Git commit SHA (e.g. sha-xxxxxxx) instead of latest
-#           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/course-matcher-api:sha-${{ github.sha }}
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          # Best practice tag: using Git commit SHA (e.g. sha-xxxxxxx) instead of latest
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/course-matcher-api:sha-${{ github.sha }}
 
-#   # ==========================================
-#   # STAGE 3: DEPLOYMENT
-#   # ==========================================
+  # ==========================================
+  # STAGE 3: DEPLOYMENT
+  # ==========================================
 
-#   deploy:
-#     # Purpose: Pulls the new Docker image and restarts the services on the remote server.
-#     # Rationale: Synchronizes the remote production server with the latest verified container image.
-#     # Dependencies: Requires successful execution of the build-docker job.
-#     name: Deploy via SSH
-#     runs-on: ubuntu-latest
-#     needs: build-docker
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v4
+  deploy:
+    # Purpose: Pulls the new Docker image and restarts the services on the remote server.
+    # Rationale: Synchronizes the remote production server with the latest verified container image.
+    # Dependencies: Requires successful execution of the build-docker job.
+    name: Deploy via SSH
+    runs-on: ubuntu-latest
+    needs: build-docker
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-#       - name: Configure SSH and Deploy
-#         run: |
-#           # Setup SSH directory and populate private key
-#           mkdir -p ~/.ssh
-#           chmod 700 ~/.ssh
+      - name: Configure SSH and Deploy
+        run: |
+          # Setup SSH directory and populate private key
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           
-#           # Initialize ssh-agent and add deployment private key
-#           eval $(ssh-agent -s)
-#           echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -
+          # Initialize ssh-agent and add deployment private key
+          eval $(ssh-agent -s)
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -
           
-#           # Add jump host private key if jump host is used
-#           if [ -n "${{ secrets.SSH_JUMP_KEY }}" ]; then
-#             echo "${{ secrets.SSH_JUMP_KEY }}" | tr -d '\r' | ssh-add -
-#           fi
+          # Add jump host private key if jump host is used
+          if [ -n "${{ secrets.SSH_JUMP_KEY }}" ]; then
+            echo "${{ secrets.SSH_JUMP_KEY }}" | tr -d '\r' | ssh-add -
+          fi
 
-#           # Construct SSH command with Jump Host option if applicable
-#           SSH_OPTS="-o StrictHostKeyChecking=no"
-#           if [ -n "${{ secrets.SSH_JUMP_HOST }}" ]; then
-#             SSH_OPTS="$SSH_OPTS -J ${{ secrets.SSH_JUMP_USER }}@${{ secrets.SSH_JUMP_HOST }}"
-#           fi
+          # Construct SSH command with Jump Host option if applicable
+          SSH_OPTS="-o StrictHostKeyChecking=no"
+          if [ -n "${{ secrets.SSH_JUMP_HOST }}" ]; then
+            SSH_OPTS="$SSH_OPTS -J ${{ secrets.SSH_JUMP_USER }}@${{ secrets.SSH_JUMP_HOST }}"
+          fi
 
-#           # Define the target image using the unique commit SHA tag
-#           DOCKER_IMAGE="${{ secrets.DOCKER_HUB_USERNAME }}/course-matcher-api:sha-${{ github.sha }}"
+          # Define the target image using the unique commit SHA tag
+          DOCKER_IMAGE="${{ secrets.DOCKER_HUB_USERNAME }}/course-matcher-api:sha-${{ github.sha }}"
 
-#           # SSH into target host, navigate to directory, update env image, pull and restart containers
-#           ssh $SSH_OPTS ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
-#             cd course-matcher-agent && \
-#             export DOCKER_IMAGE=$DOCKER_IMAGE && \
-#             docker compose pull && \
-#             docker compose down && \
-#             docker compose up -d
-#           "
+          # SSH into target host, navigate to directory, update env image, pull and restart containers
+          ssh $SSH_OPTS ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            cd Course-Matcher-Agent && \
+            export DOCKER_IMAGE=$DOCKER_IMAGE && \
+            docker compose pull && \
+            docker compose down && \
+            docker compose up -d
+          "
 
-#   # ==========================================
-#   # STAGE 4: VERSIONING & RELEASE
-#   # ==========================================
+  # ==========================================
+  # STAGE 4: VERSIONING & RELEASE
+  # ==========================================
 
-#   release:
-#     # Purpose: Tags the Git repository and publishes a GitHub release.
-#     # Rationale: Seals the release pipeline and creates a traceable version log linked to the live production build.
-#     # Dependencies: Requires successful execution of the deploy job.
-#     name: Versioning & Release
-#     runs-on: ubuntu-latest
-#     needs: deploy
-#     env:
-#       GH_TOKEN: ${{ github.token }}
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0
-
-#       - name: Generate Version Tag & Release
-#         run: |
-#           # Set up git client profile
-#           git config --global user.name "github-actions[bot]"
-#           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-#           # Derive semantic version based on build run number
-#           VERSION_TAG="v1.0.${{ github.run_number }}"
-#           echo "Release version: $VERSION_TAG"
-          
-#           # Create and push git tag
-#           git tag $VERSION_TAG
-#           git push origin $VERSION_TAG
-          
-#           # Create GitHub Release with release notes using official CLI
-#           gh release create $VERSION_TAG \
-#             --title "Release $VERSION_TAG" \
-#             --notes "Automated build release triggered by successful deployment of commit ${{ github.sha }}."
+  release:
+    # Purpose: Tags the Git repository and publishes a GitHub release.
+    # Rationale: Seals the release pipeline and creates a traceable version log linked to the live production build.
+    # Dependencies: Requires successful execution of the deploy job.
+    name: Auto-Versioning & Release
+    needs: [deploy]
+    if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '#skip') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: '0'
+    - name: Bump version and push tag
+      uses: anothrNick/github-tag-action@8c8163ef62cf9c4677c8e800f36270af27930f42 # Don't use @master or @v1 unless you're happy to test the latest version
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }} # if you don't want to set write permissions use a PAT token
+        WITH_V: false
+        DEFAULT_BUMP: patch
+      
