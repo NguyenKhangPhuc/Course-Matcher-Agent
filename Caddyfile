@@ -1,4 +1,4 @@
-cmp-be.ikapo.fi {
+cmpa.ikapo.fi {
     # Reverse proxy to the FastAPI app service on its internal port
     reverse_proxy app:{$PORT:8000}
 
