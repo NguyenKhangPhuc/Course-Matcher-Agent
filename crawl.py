@@ -243,9 +243,10 @@ def walk_tree(node, context, rows):
             credits = node.get("maxCredits")
 
         row = {
-            "programme": context.get("programme", ""),
+            # Theo yêu cầu: swap giá trị programme <-> study_option ở output
+            "programme": context.get("study_option", ""),
             "degree_type": context.get("degree_type", ""),
-            "study_option": context.get("study_option", ""),
+            "study_option": context.get("programme", ""),
             "title": title,
             "code": course_code,
             "id": course_id,
