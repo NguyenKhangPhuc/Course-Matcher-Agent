@@ -1,5 +1,6 @@
 services:
   app:
+    image: ${DOCKER_IMAGE:-ikapo/course-matcher-api:latest}
     build:
       context: .
       dockerfile: Dockerfile
