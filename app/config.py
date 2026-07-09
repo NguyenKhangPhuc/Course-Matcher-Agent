@@ -3,17 +3,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+def get_env_stripped(key: str, default: str = "") -> str:
+    val = os.getenv(key)
+    if val is not None:
+        # Strip trailing/leading whitespaces and carriage returns (\r)
+        return val.strip()
+    return default
 
-SUMMARIZE_MODEL = os.getenv("SUMMARIZE_MODEL", "llama-3.3-70b-versatile")
-EXPLANATION_MODEL = os.getenv("EXPLANATION_MODEL", "llama-3.1-8b-instant")
-EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+SUPABASE_URL = get_env_stripped("SUPABASE_URL")
+SUPABASE_SERVICE_KEY = get_env_stripped("SUPABASE_SERVICE_KEY")
+OPENAI_API_KEY = get_env_stripped("OPENAI_API_KEY")
+GROQ_API_KEY = get_env_stripped("GROQ_API_KEY")
 
-MATCH_COUNT = int(os.getenv("MATCH_COUNT", 9))
-MATCH_THRESHOLD = float(os.getenv("MATCH_THRESHOLD", 0))
+SUMMARIZE_MODEL = get_env_stripped("SUMMARIZE_MODEL", "llama-3.3-70b-versatile")
+EXPLANATION_MODEL = get_env_stripped("EXPLANATION_MODEL", "llama-3.1-8b-instant")
+EMBEDDING_MODEL = get_env_stripped("EMBEDDING_MODEL", "text-embedding-3-small")
 
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
-PORT = int(os.getenv("PORT", 8000))
+MATCH_COUNT = int(get_env_stripped("MATCH_COUNT", "9"))
+MATCH_THRESHOLD = float(get_env_stripped("MATCH_THRESHOLD", "0"))
+
+ALLOWED_ORIGINS = [orig.strip() for orig in get_env_stripped("ALLOWED_ORIGINS", "*").split(",")]
+PORT = int(get_env_stripped("PORT", "8000"))

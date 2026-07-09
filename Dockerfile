@@ -52,7 +52,7 @@ EXPOSE 8000
 
 # Healthcheck to verify the web service is serving requests
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=5)" || exit 1
+  CMD python -c "import urllib.request, os; port = os.getenv('PORT', '8000'); urllib.request.urlopen(f'http://localhost:{port}/api/health', timeout=5)" || exit 1
 
-# Start the application using uvicorn under executive form (inheriting PID 1 for signals)
-CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Start the application
+CMD ["python", "run.py"]
