@@ -76,9 +76,9 @@ def get_json(url: str):
             time.sleep(SLEEP_BETWEEN_REQUESTS)
             return resp.json()
         except Exception as e:
-            print(f"  [WARN] Lỗi khi gọi {url} (lần {attempt}/{MAX_RETRIES}): {e}")
+            // print(f"  [WARN] Lỗi khi gọi {url} (lần {attempt}/{MAX_RETRIES}): {e}")
             time.sleep(1.5 * attempt)
-    print(f"  [ERROR] Bỏ qua {url} sau {MAX_RETRIES} lần thử")
+    // print(f"  [ERROR] Bỏ qua {url} sau {MAX_RETRIES} lần thử")
     return None
 
 
@@ -280,7 +280,7 @@ DEGREE_STUDIES_FACULTY_FILTER = ["10965"]
 
 
 def crawl_degree_studies():
-    print("=== Crawl Degree Studies (id=11738) ===")
+    // print("=== Crawl Degree Studies (id=11738) ===")
     rows = []
 
     faculties = get_json(f"{BASE_API}/organisation?period={PERIOD}") or []
@@ -291,7 +291,7 @@ def crawl_degree_studies():
         if DEGREE_STUDIES_FACULTY_FILTER and str(faculty_id) not in DEGREE_STUDIES_FACULTY_FILTER:
             continue
         faculty_name = val(faculty.get("name"))
-        print(f"[Faculty] {faculty_name} ({faculty_id})")
+        // print(f"[Faculty] {faculty_name} ({faculty_id})")
 
         education_data = get_json(f"{BASE_API}/education/{faculty_id}/11738?period={PERIOD}")
         if not education_data:
@@ -302,13 +302,13 @@ def crawl_degree_studies():
 
         for edu in education_nodes:
             programme_name = val(edu.get("name"))
-            print(f"  [Education] {programme_name}")
+            // print(f"  [Education] {programme_name}")
 
             for child in (edu.get("children") or []):
                 if child.get("type") != "PROGRAMME":
                     continue
                 programme_id = child.get("id")
-                print(f"    [Programme] {val(child.get('name'))} (id={programme_id})")
+                // print(f"    [Programme] {val(child.get('name'))} (id={programme_id})")
 
                 plan = get_json(f"{BASE_API}/accomplishment-plan/{programme_id}?period={PERIOD}")
                 if not plan:
@@ -337,15 +337,15 @@ EXCHANGE_PROGRAMME_IDS = ["53264"]
 
 
 def crawl_exchange_students():
-    print("=== Crawl Exchange Students (id=18715) ===")
+    // print("=== Crawl Exchange Students (id=18715) ===")
     rows = []
 
     for programme_id in EXCHANGE_PROGRAMME_IDS:
-        print(f"[Programme] id={programme_id}")
+        // print(f"[Programme] id={programme_id}")
 
         plan = get_json(f"{BASE_API}/accomplishment-plan/{programme_id}?period={PERIOD}")
         if not plan:
-            print(f"  [WARN] Không lấy được dữ liệu cho programme id={programme_id}")
+            // print(f"  [WARN] Không lấy được dữ liệu cho programme id={programme_id}")
             continue
 
         plan_nodes = plan if isinstance(plan, list) else [plan]
@@ -373,7 +373,7 @@ def crawl_exchange_students():
 # --------------------------------------------------------------------------- #
 def write_excel(rows, filepath):
     if not rows:
-        print(f"[WARN] Không có dữ liệu để ghi vào {filepath}")
+        // print(f"[WARN] Không có dữ liệu để ghi vào {filepath}")
         return
 
     df = pd.DataFrame(rows)
@@ -384,7 +384,7 @@ def write_excel(rows, filepath):
     df = df[FULL_COLUMNS]
 
     df.to_excel(filepath, index=False, engine="openpyxl")
-    print(f"[OK] Đã ghi {len(df)} dòng vào {filepath}")
+    // print(f"[OK] Đã ghi {len(df)} dòng vào {filepath}")
 
 
 def main():

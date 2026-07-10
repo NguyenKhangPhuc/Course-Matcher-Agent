@@ -94,7 +94,7 @@ Job Description:
 """
     
     response = model.invoke([HumanMessage(content=extraction_prompt)])
-    print(f"Summarize successfully {response.content}")
+    // print(f"Summarize successfully {response.content}")
     return response.content
 
 
@@ -120,11 +120,11 @@ def search_matching_courses(technical_requirements: str, source_id: str) -> str:
         "match_count": 12,
         "match_threshold": 0.0
     }).execute()
-    print(f"RPC data: {result.data}")
-    print(f"RPC count: {len(result.data) if result.data else 0}")
-    print(f"Query vector type: {type(query_vector)}")
-    print(f"Query vector length: {len(query_vector)}")
-    print(f"Query vector sample: {query_vector[:5]}")
+    // print(f"RPC data: {result.data}")
+    // print(f"RPC count: {len(result.data) if result.data else 0}")
+    // print(f"Query vector type: {type(query_vector)}")
+    // print(f"Query vector length: {len(query_vector)}")
+    // print(f"Query vector sample: {query_vector[:5]}")
     if not result.data:
         return json.dumps([])
 
@@ -260,14 +260,14 @@ async def get_current_user(authorization: str = Header(...)):
     try:
         token = authorization.replace("Bearer ", "").strip()
         user_response = supabase.auth.get_user(token)
-        print(token)
-        print(user_response)
+        // print(token)
+        // print(user_response)
         if not user_response.user:
-            print(f"Auth error details:")
+            // print(f"Auth error details:")
             raise HTTPException(status_code=401, detail="Invalid or expired token")
         return user_response.user
     except Exception as e:
-        print(f"Auth error details: {str(e)}")
+        // print(f"Auth error details: {str(e)}")
         raise HTTPException(status_code=401, detail="Authentication failed")
 
 
@@ -318,7 +318,7 @@ async def chat(
     Raises:
         HTTPException 500: If the agent fails to process the request.
     """
-    print("Starting the process \n")
+    // print("Starting the process \n")
     try:
         user_message = (
             f"Company: {request.company_name or 'Unknown'}\n"
@@ -326,7 +326,7 @@ async def chat(
             f"Source ID: {request.source_id}\n\n"
             f"Job Description:\n{request.job_description}"
         )
-        print(user_message)
+        // print(user_message)
         # AgentExecutor dùng key "input", trả về key "output"
         agent_response = agent.invoke({
             "messages": [
@@ -362,8 +362,8 @@ async def chat(
 
     except Exception as e:
         import traceback
-        print(f"ERROR: {str(e)}")
-        print(traceback.format_exc())  # ← in full stack trace
+        // print(f"ERROR: {str(e)}")
+        // print(traceback.format_exc())  # ← in full stack trace
         raise HTTPException(status_code=500, detail=str(e))
 
 
