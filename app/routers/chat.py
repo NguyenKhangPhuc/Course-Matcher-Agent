@@ -8,7 +8,7 @@ from app.core.limiter import limiter
 
 router = APIRouter(prefix="/api", tags=["chat"])
 @router.post("/chat")
-@limiter.limit("15/minute;50/day")
+@limiter.limit("5/minute;50/day")
 async def chat(request: Request,bodyRequest: ChatRequest, current_user=Depends(get_current_user)):
     return StreamingResponse(
         run_streaming_agent(
