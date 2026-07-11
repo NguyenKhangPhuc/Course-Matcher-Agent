@@ -1,7 +1,26 @@
-from app.client import groq_client
-from app.config import SUMMARIZE_MODEL
+import logging
+from groq import RateLimitError, APIStatusError
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+    before_sleep_log,
+)
 
-def summarize_jd(job_description: str) -> str:
+from app.config import SUMMARIZE_MODEL
+from app.client import groq_client
+
+logger = logging.getLogger(__name__)
+
+@retry(
+    retry=retry_if_exception_type(RateLimitError),
+    wait=wait_exponential(multiplier=1, min=2, max=30),  # 2s, 4s, 8s... tối đa 30s
+    stop=stop_after_attempt(4),  # thử tối đa 4 lần
+    before_sleep=before_sleep_log(logger, logging.WARNING),
+    reraise=True,
+)
+def _call_groq(job_description: str) -> str:
     response = groq_client.chat.completions.create(
         model=SUMMARIZE_MODEL,
         messages=[
@@ -22,3 +41,16 @@ Job Description:
         temperature=0.3,
     )
     return response.choices[0].message.content.strip()
+
+
+def summarize_jd(job_description: str) -> str:
+    try:
+        return _call_groq(job_description)
+    except RateLimitError as e:
+        logger.error(f"Groq rate limit exceeded after retries: {e}")
+        raise RuntimeError(
+            "AI service is currently busy, please try again in a moment."
+        ) from e
+    except APIStatusError as e:
+        logger.error(f"Groq API error: {e}")
+        raise RuntimeError("AI service error, please try again.") from e
