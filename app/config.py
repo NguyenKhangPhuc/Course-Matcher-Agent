@@ -15,7 +15,7 @@ SUPABASE_SERVICE_KEY = get_env_stripped("SUPABASE_SERVICE_KEY")
 OPENAI_API_KEY = get_env_stripped("OPENAI_API_KEY")
 GROQ_API_KEY = get_env_stripped("GROQ_API_KEY")
 
-SUMMARIZE_MODEL = get_env_stripped("SUMMARIZE_MODEL", "qwen3.6-27b")
+SUMMARIZE_MODEL = get_env_stripped("SUMMARIZE_MODEL", "qwen/qwen3.6-27b")
 EXPLANATION_MODEL = get_env_stripped("EXPLANATION_MODEL", "openai/gpt-oss-120b")
 EMBEDDING_MODEL = get_env_stripped("EMBEDDING_MODEL", "text-embedding-3-small")
 
