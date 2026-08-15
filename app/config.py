@@ -15,8 +15,8 @@ SUPABASE_SERVICE_KEY = get_env_stripped("SUPABASE_SERVICE_KEY")
 OPENAI_API_KEY = get_env_stripped("OPENAI_API_KEY")
 GROQ_API_KEY = get_env_stripped("GROQ_API_KEY")
 
-SUMMARIZE_MODEL = get_env_stripped("SUMMARIZE_MODEL", "llama-3.3-70b-versatile")
-EXPLANATION_MODEL = get_env_stripped("EXPLANATION_MODEL", "llama-3.1-8b-instant")
+SUMMARIZE_MODEL = get_env_stripped("SUMMARIZE_MODEL", "openai/gpt-oss-120b")
+EXPLANATION_MODEL = get_env_stripped("EXPLANATION_MODEL", "openai/gpt-oss-20b")
 EMBEDDING_MODEL = get_env_stripped("EMBEDDING_MODEL", "text-embedding-3-small")
 
 MATCH_COUNT = int(get_env_stripped("MATCH_COUNT", "9"))
