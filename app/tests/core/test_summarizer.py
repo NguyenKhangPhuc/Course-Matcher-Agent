@@ -26,7 +26,7 @@ def test_summarize_jd_success(mock_groq_client):
     called_kwargs = mock_groq_client.chat.completions.create.call_args[1]
     
     # Verify API parameters
-    assert called_kwargs["max_tokens"] == 300
+    assert called_kwargs["max_tokens"] == 1000
     assert called_kwargs["temperature"] == 0.2
     
     # Verify prompt contents
