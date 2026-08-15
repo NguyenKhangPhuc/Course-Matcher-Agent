@@ -41,9 +41,20 @@ Format Example:
 
     response = groq_client.chat.completions.create(
         model=EXPLANATION_MODEL,
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You are a strict JSON generator. You MUST return ONLY a valid JSON object. "
+                    "Do NOT include any markdown codeblocks (```json), preambles, conversational text, "
+                    "or <think> tags. Provide the raw JSON object directly."
+                ),
+            },
+            {"role": "user", "content": prompt},
+        ],
+        max_tokens=2048,
         temperature=0.2,
-        response_format={"type": "json_object"}
+        response_format={"type": "json_object"},
     )
     return response.choices[0].message.content.strip()
 
@@ -66,7 +77,17 @@ def generate_batch_course_explanations(courses: list[dict], technical_requiremen
             "AI service is currently busy, please try again in a moment."
         ) from e
     except APIStatusError as e:
-        logger.error(f"Groq API error: {e}")
+        failed_gen = ""
+        if hasattr(e, "body") and isinstance(e.body, dict):
+            failed_gen = e.body.get("error", {}).get("failed_generation", "")
+        
+        logger.error(
+            f"Groq API error: status={getattr(e, 'status_code', None)}, message={e}. "
+            f"Failed generation: {failed_gen}"
+        )
+        print(f"\n[Groq API Error] Status: {getattr(e, 'status_code', None)} | Error: {e}")
+        if failed_gen:
+            print(f"[Groq API Error] Failed generation output from model:\n{failed_gen}\n")
         raise RuntimeError("AI service error, please try again.") from e
 
     try:

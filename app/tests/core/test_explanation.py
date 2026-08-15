@@ -41,9 +41,10 @@ def test_generate_batch_course_explanations_success(mock_groq_client):
     # Verify parameter matching
     assert called_kwargs["temperature"] == 0.2
     assert called_kwargs["response_format"] == {"type": "json_object"}
+    assert called_kwargs["max_tokens"] == 2048
     
     # Verify truncation logic in the prompt
-    prompt = called_kwargs["messages"][0]["content"]
+    prompt = " ".join([m["content"] for m in called_kwargs["messages"]])
     expected_courses_summary = [
         {
             "id": "c1",

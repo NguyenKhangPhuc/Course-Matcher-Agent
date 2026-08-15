@@ -52,5 +52,15 @@ def summarize_jd(job_description: str) -> str:
             "AI service is currently busy, please try again in a moment."
         ) from e
     except APIStatusError as e:
-        logger.error(f"Groq API error: {e}")
+        failed_gen = ""
+        if hasattr(e, "body") and isinstance(e.body, dict):
+            failed_gen = e.body.get("error", {}).get("failed_generation", "")
+
+        logger.error(
+            f"Groq API error: status={getattr(e, 'status_code', None)}, message={e}. "
+            f"Failed generation: {failed_gen}"
+        )
+        print(f"\n[Groq API Error] Status: {getattr(e, 'status_code', None)} | Error: {e}")
+        if failed_gen:
+            print(f"[Groq API Error] Failed generation output from model:\n{failed_gen}\n")
         raise RuntimeError("AI service error, please try again.") from e
