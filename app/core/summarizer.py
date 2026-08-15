@@ -31,7 +31,7 @@ def _call_groq(job_description: str) -> str:
 
     Ignore: salary, location, company culture, soft skills, benefits.
 
-    Return a concise paragraph with a minimum of 70 words. No preamble, no headers, no markdown, no bold text, no bullet points, and NO <think> tags or internal monologue. Provide the plain text response directly.
+    Return a concise paragraph with a minimum of 70 words and maximum of 90 words. No preamble, no headers, no markdown, no bold text, no bullet points, and NO <think> tags or internal monologue. Provide the plain text response directly.
 
     Job Description:
     {job_description}"""
