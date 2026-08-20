@@ -15,7 +15,9 @@ async def chat(request: Request,bodyRequest: ChatRequest, current_user=Depends(g
             job_description=bodyRequest.job_description,
             source_id=bodyRequest.source_id,
             company_name=bodyRequest.company_name or "Unknown",
-            programme=bodyRequest.programme
+            programme=bodyRequest.programme,
+            start_date=bodyRequest.start_date,
+            end_date=bodyRequest.end_date
         ),
         media_type="text/event-stream",
         headers={

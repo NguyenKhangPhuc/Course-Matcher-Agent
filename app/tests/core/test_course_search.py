@@ -1,3 +1,4 @@
+from datetime import date
 from unittest.mock import MagicMock, patch
 import pytest
 from app.core.course_search import search_courses
@@ -36,6 +37,8 @@ def test_search_courses_success(mock_supabase, mock_embed_text):
     assert called_args[1]["source_id"] == source_id
     assert called_args[1]["match_count"] == limit
     assert called_args[1]["filter_programme"] == programme
+    assert called_args[1]["start_filter"] is None
+    assert called_args[1]["end_filter"] is None
     assert results == [{"id": 1, "name": "ML Course"}]
 
 
@@ -71,4 +74,48 @@ def test_search_courses_empty_result(mock_supabase, mock_embed_text):
     assert called_args[1]["query_embedding"] == "[0.9,0.8,0.7]"
     assert called_args[1]["source_id"] == source_id
     assert called_args[1]["filter_programme"] == programme
+    assert called_args[1]["start_filter"] is None
+    assert called_args[1]["end_filter"] is None
     assert results == []
+
+
+@patch("app.core.course_search.embed_text")
+@patch("app.core.course_search.supabase")
+def test_search_courses_with_date_filters(mock_supabase, mock_embed_text):
+    """
+    Target: search_courses()
+    Scenario: Test course search with optional start_date and end_date filters provided.
+    Expectation: It should format start_date and end_date as ISO strings and pass them to start_filter and end_filter in RPC call.
+    """
+    # Arrange
+    tech_reqs = "Data Science"
+    source_id = "src_789"
+    programme = "Master"
+    start_date = date(2026, 9, 1)
+    end_date = date(2026, 12, 31)
+    mock_vector = [0.4, 0.5, 0.6]
+    mock_embed_text.return_value = mock_vector
+
+    mock_rpc_builder = MagicMock()
+    mock_response = MagicMock()
+    mock_response.data = [{"id": 2, "name": "Data Science Fundamentals"}]
+    mock_rpc_builder.execute.return_value = mock_response
+    mock_supabase.rpc.return_value = mock_rpc_builder
+
+    # Act
+    results = search_courses(
+        tech_reqs,
+        source_id,
+        programme,
+        start_date=start_date,
+        end_date=end_date
+    )
+
+    # Assert
+    mock_embed_text.assert_called_once_with(tech_reqs)
+    mock_supabase.rpc.assert_called_once()
+    called_args, called_kwargs = mock_supabase.rpc.call_args
+    assert called_args[0] == "match_courses"
+    assert called_args[1]["start_filter"] == "2026-09-01"
+    assert called_args[1]["end_filter"] == "2026-12-31"
+    assert results == [{"id": 2, "name": "Data Science Fundamentals"}]

@@ -1,5 +1,7 @@
 import asyncio
-from typing import AsyncGenerator
+from datetime import date
+from functools import partial
+from typing import AsyncGenerator, Optional
 
 from app.helper.sse import sse
 from app.core.summarizer import summarize_jd
@@ -25,6 +27,10 @@ def _build_course_payload(course: dict, explanation: str) -> dict:
         "instructor": course.get("instructor", ""),
         "url": course.get("url", ""),
         "timing": course.get("timing", {}),
+        "start_date": str(course.get("start_date")) if course.get("start_date") else None,
+        "end_date": str(course.get("end_date")) if course.get("end_date") else None,
+        "enrollment_start_date": str(course.get("enrollment_start_date")) if course.get("enrollment_start_date") else None,
+        "enrollment_end_date": str(course.get("enrollment_end_date")) if course.get("enrollment_end_date") else None,
         "similarity": round(course.get("similarity", 0) * 100, 1),
         "explanation": explanation,
     }
@@ -34,7 +40,9 @@ async def run_streaming_agent(
     job_description: str,
     source_id: str,
     company_name: str,
-    programme: str
+    programme: str,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
 ) -> AsyncGenerator[str, None]:
     loop = asyncio.get_event_loop()
 
@@ -45,7 +53,15 @@ async def run_streaming_agent(
         yield sse("requirements", technical_requirements)
 
         courses = await loop.run_in_executor(
-            None, search_courses, technical_requirements, source_id, programme
+            None,
+            partial(
+                search_courses,
+                technical_requirements,
+                source_id,
+                programme,
+                start_date=start_date,
+                end_date=end_date,
+            ),
         )
 
         if not courses:

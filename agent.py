@@ -13,6 +13,7 @@ Required packages:
 
 import json
 import os
+from datetime import date
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -94,12 +95,17 @@ Job Description:
 """
     
     response = model.invoke([HumanMessage(content=extraction_prompt)])
-    // print(f"Summarize successfully {response.content}")
+    # print(f"Summarize successfully {response.content}")
     return response.content
 
 
 @tool
-def search_matching_courses(technical_requirements: str, source_id: str) -> str:
+def search_matching_courses(
+    technical_requirements: str,
+    source_id: str,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+) -> str:
     """
     Perform semantic similarity search to find university courses that match
     the given technical requirements.
@@ -107,6 +113,8 @@ def search_matching_courses(technical_requirements: str, source_id: str) -> str:
     Args:
         technical_requirements: A concise string of technical skills and requirements.
         source_id: The UUID of the course collection to search within.
+        start_date: Optional start date filter in YYYY-MM-DD format.
+        end_date: Optional end date filter in YYYY-MM-DD format.
 
     Returns:
         A JSON string containing list of matching courses with similarity scores.
@@ -118,13 +126,10 @@ def search_matching_courses(technical_requirements: str, source_id: str) -> str:
         "query_embedding": query_vector,
         "source_id": str(uuid.UUID(source_id)),
         "match_count": 12,
-        "match_threshold": 0.0
+        "match_threshold": 0.0,
+        "start_filter": start_date,
+        "end_filter": end_date,
     }).execute()
-    // print(f"RPC data: {result.data}")
-    // print(f"RPC count: {len(result.data) if result.data else 0}")
-    // print(f"Query vector type: {type(query_vector)}")
-    // print(f"Query vector length: {len(query_vector)}")
-    // print(f"Query vector sample: {query_vector[:5]}")
     if not result.data:
         return json.dumps([])
 
@@ -142,6 +147,10 @@ def search_matching_courses(technical_requirements: str, source_id: str) -> str:
             "description": row.get("description", ""),
             "credits": row.get("credits", ""),
             "url": row.get("url", ""),
+            "start_date": row.get("start_date", None),
+            "end_date": row.get("end_date", None),
+            "enrollment_start_date": row.get("enrollment_start_date", None),
+            "enrollment_end_date": row.get("enrollment_end_date", None),
             "similarity": round(row.get("similarity", 0) * 100, 1),
         })
 
@@ -260,14 +269,14 @@ async def get_current_user(authorization: str = Header(...)):
     try:
         token = authorization.replace("Bearer ", "").strip()
         user_response = supabase.auth.get_user(token)
-        // print(token)
-        // print(user_response)
+        # print(token)
+        # print(user_response)
         if not user_response.user:
-            // print(f"Auth error details:")
+            # print(f"Auth error details:")
             raise HTTPException(status_code=401, detail="Invalid or expired token")
         return user_response.user
     except Exception as e:
-        // print(f"Auth error details: {str(e)}")
+        # print(f"Auth error details: {str(e)}")
         raise HTTPException(status_code=401, detail="Authentication failed")
 
 
@@ -281,6 +290,8 @@ class ChatRequest(BaseModel):
     source_id: str
     position: str
     company_name: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
 
 
 class ChatResponse(BaseModel):
@@ -318,7 +329,7 @@ async def chat(
     Raises:
         HTTPException 500: If the agent fails to process the request.
     """
-    // print("Starting the process \n")
+    # print("Starting the process \n")
     try:
         user_message = (
             f"Company: {request.company_name or 'Unknown'}\n"
@@ -326,7 +337,7 @@ async def chat(
             f"Source ID: {request.source_id}\n\n"
             f"Job Description:\n{request.job_description}"
         )
-        // print(user_message)
+        # print(user_message)
         # AgentExecutor dùng key "input", trả về key "output"
         agent_response = agent.invoke({
             "messages": [
@@ -362,8 +373,8 @@ async def chat(
 
     except Exception as e:
         import traceback
-        // print(f"ERROR: {str(e)}")
-        // print(traceback.format_exc())  # ← in full stack trace
+        # print(f"ERROR: {str(e)}")
+        # print(traceback.format_exc())  # ← in full stack trace
         raise HTTPException(status_code=500, detail=str(e))
 
 
