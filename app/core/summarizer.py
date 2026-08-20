@@ -30,9 +30,11 @@ def _call_groq(job_description: str) -> str:
                     "Extract ONLY the technical skills, tools, frameworks, programming languages, "
                     "and domain knowledge from the provided job description. "
                     "Ignore: salary, location, company culture, soft skills, benefits. "
-                    "Return a concise paragraph of approximately 70 to 90 words. "
-                    "No preamble, no headers, no markdown, no bold text, no bullet points, "
-                    "and NO <think> tags or internal monologue. Provide the plain text response directly."
+                    "If the input job description is very short or brief, simply paraphrase and refine the technical requirements without over-summarizing or losing details. "
+                    "Return a concise paragraph of approximately 50-65 words. "
+                    "No preamble, no headers, no markdown, no bold text, no bullet points. "
+                    "CRITICAL: You MUST write the output in the EXACT SAME LANGUAGE as the input job description "
+                    "(e.g., if the job description is in Finnish, write in Finnish; if in Vietnamese, write in Vietnamese)."
                 ),
             },
             {
