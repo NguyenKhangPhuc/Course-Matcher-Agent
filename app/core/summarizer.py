@@ -25,19 +25,22 @@ def _call_groq(job_description: str) -> str:
         model=SUMMARIZE_MODEL,
         messages=[
             {
+                "role": "system",
+                "content": (
+                    "Extract ONLY the technical skills, tools, frameworks, programming languages, "
+                    "and domain knowledge from the provided job description. "
+                    "Ignore: salary, location, company culture, soft skills, benefits. "
+                    "Return a concise paragraph of approximately 70 to 90 words. "
+                    "No preamble, no headers, no markdown, no bold text, no bullet points, "
+                    "and NO <think> tags or internal monologue. Provide the plain text response directly."
+                ),
+            },
+            {
                 "role": "user",
-                "content": f"""Extract ONLY the technical skills, tools, frameworks, 
-    programming languages, and domain knowledge from this job description.
-
-    Ignore: salary, location, company culture, soft skills, benefits.
-
-    Return a concise paragraph of approximately 70 to 90 words. No preamble, no headers, no markdown, no bold text, no bullet points, and NO <think> tags or internal monologue. Provide the plain text response directly.
-
-    Job Description:
-    {job_description}"""
-            }
+                "content": f"Job Description:\n{job_description}",
+            },
         ],
-        max_tokens=1000,
+        max_tokens=400,
         temperature=0.2, # Giảm temperature xuống thấp để mô hình tập trung tuyệt đối vào việc tuân thủ lệnh
     )
     return response.choices[0].message.content.strip()

@@ -26,13 +26,13 @@ def test_summarize_jd_success(mock_groq_client):
     called_kwargs = mock_groq_client.chat.completions.create.call_args[1]
     
     # Verify API parameters
-    assert called_kwargs["max_tokens"] == 1000
+    assert called_kwargs["max_tokens"] == 400
     assert called_kwargs["temperature"] == 0.2
     
     # Verify prompt contents
-    prompt_content = called_kwargs["messages"][0]["content"]
-    assert jd in prompt_content
-    assert "Extract ONLY the technical skills" in prompt_content
+    all_messages_content = " ".join([m["content"] for m in called_kwargs["messages"]])
+    assert jd in all_messages_content
+    assert "Extract ONLY the technical skills" in all_messages_content
     
     # Verify stripped output
     assert summary == expected_summary
