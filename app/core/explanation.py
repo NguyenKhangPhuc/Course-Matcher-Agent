@@ -31,7 +31,7 @@ Job Requirements:
 Courses List (JSON format):
 {json.dumps(courses_summary)}
 
-CRITICAL LANGUAGE REQUIREMENT: You MUST write the 1-2 sentence explanations in the EXACT SAME LANGUAGE as the Job Requirements (e.g., if Job Requirements are in Finnish, write the explanations in Finnish; if in Vietnamese, write in Vietnamese).
+CRITICAL LANGUAGE REQUIREMENT: You MUST write the short 1-2 sentence explanations in the EXACT SAME LANGUAGE as the Job Requirements (e.g., if Job Requirements are in Finnish, write the explanations in Finnish; if in Vietnamese, write in Vietnamese).
 
 CRITICAL FORMAT REQUIREMENT: You must return a valid JSON object where the keys are the course IDs and the values are the 1-2 sentence explanations. 
 Do not include any markdown formatting, no ```json, no preamble. Just the raw JSON object.
