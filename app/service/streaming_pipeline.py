@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import date
 from functools import partial
 from typing import AsyncGenerator, Optional
@@ -7,6 +8,8 @@ from app.helper.sse import sse
 from app.core.summarizer import summarize_jd
 from app.core.course_search import search_courses
 from app.core.explanation import generate_batch_course_explanations
+
+logger = logging.getLogger(__name__)
 
 
 def _build_course_payload(course: dict, explanation: str) -> dict:
@@ -68,9 +71,13 @@ async def run_streaming_agent(
             yield sse("done", {"total": 0, "summary": "No matching courses found."})
             return
 
-        explanations_dict = await loop.run_in_executor(
-            None, generate_batch_course_explanations, courses, technical_requirements
-        )
+        try:
+            explanations_dict = await loop.run_in_executor(
+                None, generate_batch_course_explanations, courses, technical_requirements
+            )
+        except Exception as e:
+            logger.warning(f"Failed to generate course explanations, falling back: {e}")
+            explanations_dict = {}
 
         total = 0
         for course in courses:
