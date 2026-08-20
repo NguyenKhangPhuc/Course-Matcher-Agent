@@ -40,8 +40,8 @@ def _call_groq(job_description: str) -> str:
                 "content": f"Job Description:\n{job_description}",
             },
         ],
-        max_tokens=1000,
-        temperature=0.3, # Giảm temperature xuống thấp để mô hình tập trung tuyệt đối vào việc tuân thủ lệnh
+        max_tokens=300,
+        temperature=0.2, # Giảm temperature xuống thấp để mô hình tập trung tuyệt đối vào việc tuân thủ lệnh
     )
     content = response.choices[0].message.content or ""
     content = content.strip()
