@@ -16,13 +16,6 @@ services:
       - "8000:8000"
     networks:
       - app-network
-    deploy:
-      resources:
-        limits:
-          cpus: '1.5'
-          memory: 1536M
-        reservations:
-          memory: 512M
 
 networks:
   app-network:

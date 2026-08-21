@@ -12,13 +12,6 @@ services:
       - PORT=${PORT:-8000}
     networks:
       - app-network
-    deploy:
-      resources:
-        limits:
-          cpus: '1.5'
-          memory: 1536M
-        reservations:
-          memory: 512M
 
   caddy:
     image: caddy:2.7-alpine
@@ -38,13 +31,6 @@ services:
         condition: service_healthy
     networks:
       - app-network
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 256M
-        reservations:
-          memory: 64M
 
 networks:
   app-network:
